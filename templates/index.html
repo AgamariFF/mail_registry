@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Почтовый реестр</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка с названием раздела -->
+        <div class="header">
+            <h1>Почтовый реестр</h1>
+            <div class="subtitle">
+                <span>Текущий раздел:</span>
+                <div class="badge" id="currentSection">Исходящие письма</div>
+            </div>
+        </div>
+
+        <!-- Панель инструментов -->
+        <div class="toolbar">
+            <button class="add-btn" onclick="addLetter()">
+                <span>+</span>
+                Добавить письмо
+            </button>
+            
+            <div class="filters">
+                <input type="text" class="search-box" placeholder="Поиск по номеру или содержанию..." id="searchInput">
+                <select class="search-box" id="executorFilter">
+                    <option value="">Все исполнители</option>
+                    <option value="Кедров">Кедров</option>
+                    <option value="Дроздовский">Дроздовский</option>
+                    <option value="Шехавцов">Шехавцов</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Таблица с письмами -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Исходящий номер</th>
+                        <th>Дата регистрации</th>
+                        <th>Адресат</th>
+                        <th>Краткое содержание</th>
+                        <th>Исполнитель</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="lettersTable">
+                    <!-- Данные будут загружены через JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="../static/script.js"></script>
+</body>
+</html>
