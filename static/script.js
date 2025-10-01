@@ -150,29 +150,92 @@ function truncateText(text, maxLength) {
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 }
 
-// Обработчики действий
+function toggleLetterFields() {
+    const letterType = document.getElementById('letterType').value;
+    const outgoingFields = document.getElementById('outgoingFields');
+    const incomingFields = document.getElementById('incomingFields');
+    
+    if (letterType === 'outgoing') {
+        outgoingFields.style.display = 'block';
+        incomingFields.style.display = 'none';
+    } else if (letterType === 'incoming') {
+        outgoingFields.style.display = 'none';
+        incomingFields.style.display = 'block';
+    } else {
+        outgoingFields.style.display = 'none';
+        incomingFields.style.display = 'none';
+    }
+}
+
+// Обработчик отправки формы
+document.getElementById('addLetterForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const letterType = formData.get('type');
+    
+    try {
+        let response;
+        if (letterType === 'outgoing') {
+            response = await fetch(`${API_BASE_URL}/outgoing`, {
+                method: 'POST',
+                body: formData
+            });
+        } else if (letterType === 'incoming') {
+            response = await fetch(`${API_BASE_URL}/incoming`, {
+                method: 'POST',
+                body: formData
+            });
+        } else {
+            alert('Выберите тип письма');
+            return;
+        }
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Ошибка при добавлении письма');
+        }
+
+        const newLetter = await response.json();
+        console.log('✅ Письмо добавлено:', newLetter);
+        
+        // Закрываем модальное окно
+        closeAddModal();
+        
+        // Показываем уведомление
+        showNotification('Письмо успешно добавлено!', 'success');
+        
+        // Обновляем список писем
+        loadLetters();
+        
+    } catch (error) {
+        console.error('❌ Ошибка при добавлении письма:', error);
+        showNotification('Ошибка при добавлении письма: ' + error.message, 'error');
+    }
+});
+
+// Функция для показа уведомлений
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <span class="notification-message">${message}</span>
+            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">&times;</button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Автоматическое удаление через 5 секунд
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Обновите функцию addLetter
 function addLetter() {
-    alert('Функция "Добавить письмо" будет реализована позже');
-    // Здесь будет логика открытия формы добавления письма
+    openAddModal();
 }
-
-function editLetter(id) {
-    alert(`Редактирование письма #${id}`);
-    // Здесь будет логика открытия формы редактирования
-}
-
-// Поиск и фильтрация
-document.getElementById('searchInput').addEventListener('input', function(e) {
-    // Здесь будет логика поиска
-    console.log('Поиск:', e.target.value);
-});
-
-document.getElementById('executorFilter').addEventListener('change', function(e) {
-    // Здесь будет логика фильтрации по исполнителю
-    console.log('Фильтр:', e.target.value);
-});
-
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
-    renderLetters();
-});

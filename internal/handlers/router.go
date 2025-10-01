@@ -31,6 +31,8 @@ func SetupRouter(store *storage.Storage) *gin.Engine {
 			c.JSON(200, gin.H{"status": "OK", "service": "mail"})
 		})
 		mailGroup.GET("/outgoing/:id/download", letterHandler.DownloadOutgoingLetter)
+		mailGroup.POST("/outgoing", letterHandler.CreateOutgoingLetter)
+		mailGroup.POST("/incoming", letterHandler.CreateIncomingLetter)
 	}
 
 	return router

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавить письмо - Почтовый реестр</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка -->
+        <div class="header">
+            <h1>Добавить новое письмо</h1>
+            <div class="subtitle">
+                <span>Заполните информацию о письме</span>
+            </div>
+        </div>
+
+        <!-- Навигация назад -->
+        <div class="navigation">
+            <a href="/mail/" class="back-link">← Назад к списку писем</a>
+        </div>
+
+        <!-- Форма добавления письма -->
+        <div class="form-container">
+            <form id="addLetterForm" class="letter-form">
+                <!-- Выбор типа письма -->
+                <div class="form-section">
+                    <h3>Тип письма</h3>
+                    <div class="form-group large">
+                        <label for="letterType">Тип письма *</label>
+                        <select id="letterType" name="type" required onchange="toggleLetterFields()">
+                            <option value="">Выберите тип</option>
+                            <option value="outgoing">Исходящее</option>
+                            <option value="incoming">Входящее</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Общие поля -->
+                <div class="form-section">
+                    <h3>Общая информация</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group large">
+                            <label for="internalNumber" id="internalNumberLabel">Исходящий номер *</label>
+                            <input type="text" id="internalNumber" name="internal_number" required 
+                                   placeholder="Например: 281-СКС">
+                        </div>
+                        <div class="form-group large">
+                            <label for="registrationDate">Дата регистрации *</label>
+                            <input type="date" id="registrationDate" name="registration_date" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group large">
+                        <label for="subject">Краткое содержание *</label>
+                        <textarea id="subject" name="subject" rows="4" required 
+                                  placeholder="Опишите краткое содержание письма"></textarea>
+                    </div>
+                </div>
+
+                <!-- Поля для исходящих писем -->
+                <div id="outgoingFields" class="form-section letter-fields">
+                    <h3>Информация об исходящем письме</h3>
+                    
+                    <div class="form-group large">
+                        <label for="recipient">Адресат *</label>
+                        <input type="text" id="recipient" name="recipient" 
+                               placeholder="Например: ПАО ИЛ, Нижнекамская ТЭЦ">
+                    </div>
+
+                    <div class="form-group large">
+                        <label>Исполнитель *</label>
+                        <div class="author-options">
+                            <select id="outgoingAuthor" name="outgoing_author" required onchange="toggleOutgoingAuthor()">
+                                <option value="">Выберите исполнителя</option>
+                                <option value="Кедров">Кедров</option>
+                                <option value="Дроздовский">Дроздовский</option>
+                                <option value="Шехавцов">Шехавцов</option>
+                                <option value="Исаев">Исаев</option>
+                                <option value="Шевченко">Шевченко</option>
+                                <option value="Степнов">Степнов</option>
+                                <option value="Сад">Сад</option>
+                                <option value="other">Другой сотрудник</option>
+                            </select>
+                        </div>
+                        <div id="outgoingAuthorCustom" class="custom-author" style="display: none;">
+                            <input type="text" id="outgoingAuthorInput" name="outgoing_author_custom" 
+                                   placeholder="Введите ФИО сотрудника">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Поля для входящих писем -->
+                <div id="incomingFields" class="form-section letter-fields" style="display: none;">
+                    <h3>Информация о входящем письме</h3>
+                    
+                    <div class="form-group large">
+                        <label for="externalNumber">Номер и дата письма отправителя</label>
+                        <input type="text" id="externalNumber" name="external_number" 
+                            placeholder="Например: № 522/21445 от 27.08.2025">
+                    </div>
+
+                    <div class="form-group large">
+                        <label for="sender">Отправитель *</label>
+                        <input type="text" id="sender" name="sender" 
+                            placeholder="Введите название организации-отправителя">
+                    </div>
+
+                    <div class="form-group large">
+                        <label>Адресат (получатель) *</label>
+                        <div class="recipient-options">
+                            <select id="addressee" name="addressee" required onchange="toggleAddressee()">
+                                <option value="">Выберите адресата</option>
+                                <option value="АСМ-Инжиниринг">АСМ-Инжиниринг</option>
+                                <option value="СтройКомплектСервис">СтройКомплектСервис</option>
+                                <option value="ПКФ Квант">ПКФ Квант</option>
+                                <option value="other">Другой адресат</option>
+                            </select>
+                        </div>
+                        <div id="addresseeCustom" class="custom-recipient" style="display: none;">
+                            <input type="text" id="addresseeInput" name="addressee_custom" 
+                                placeholder="Введите название адресата">
+                        </div>
+                    </div>
+
+                    <div class="form-group large">
+                        <label>Зарегистрировал *</label>
+                        <div class="author-options">
+                            <select id="incomingAuthor" name="incoming_author" required onchange="toggleIncomingAuthor()">
+                                <option value="">Выберите сотрудника</option>
+                                <option value="Кедров">Кедров</option>
+                                <option value="Дроздовский">Дроздовский</option>
+                                <option value="Шехавцов">Шехавцов</option>
+                                <option value="Исаев">Исаев</option>
+                                <option value="Шевченко">Шевченко</option>
+                                <option value="Степнов">Степнов</option>
+                                <option value="Сад">Сад</option>
+                                <option value="other">Другой сотрудник</option>
+                            </select>
+                        </div>
+                        <div id="incomingAuthorCustom" class="custom-author" style="display: none;">
+                            <input type="text" id="incomingAuthorInput" name="incoming_author_custom" 
+                                placeholder="Введите ФИО сотрудника">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Файл -->
+                <div class="form-section">
+                    <h3>Прикрепленный файл</h3>
+                    <div class="form-group large">
+                        <label for="fileUpload">Прикрепить файл письма</label>
+                        <input type="file" id="fileUpload" name="file" 
+                               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                        <div class="file-hint">Поддерживаемые форматы: PDF, Word, изображения</div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="/mail/" class="btn btn-cancel">Отмена</a>
+                    <button type="submit" class="btn btn-primary">Добавить письмо</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Уведомления -->
+    <div id="notificationContainer"></div>
+
+    <script src="../static/add_letter.js"></script>
+</body>
+</html>

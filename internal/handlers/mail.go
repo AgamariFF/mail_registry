@@ -1,11 +1,14 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
+	"mail_registry/internal/models"
 	"mail_registry/internal/storage"
 
 	"github.com/gin-gonic/gin"
@@ -96,6 +99,147 @@ func (h *LetterHandler) DownloadOutgoingLetter(c *gin.Context) {
 	c.Header("Content-Type", "application/octet-stream")
 
 	c.File(letter.FilePath)
+}
+
+// CreateOutgoingLetter - создание исходящего письма
+func (h *LetterHandler) CreateOutgoingLetter(c *gin.Context) {
+	var letter struct {
+		InternalNumber   string `form:"internal_number" binding:"required"`
+		RegistrationDate string `form:"registration_date" binding:"required"`
+		Recipient        string `form:"recipient" binding:"required"`
+		Subject          string `form:"subject" binding:"required"`
+		Executor         string `form:"executor" binding:"required"`
+	}
+
+	if err := c.ShouldBind(&letter); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid input data",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Парсим дату
+	regDate, err := time.Parse("2006-01-02", letter.RegistrationDate)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid date format",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Обрабатываем файл
+	filePath := ""
+	file, err := c.FormFile("file")
+	if err == nil {
+		// Сохраняем файл
+		uploadPath := "./files/outgoing"
+		os.MkdirAll(uploadPath, 0755)
+
+		filename := fmt.Sprintf("%d_%s", time.Now().Unix(), file.Filename)
+		filePath = filepath.Join(uploadPath, filename)
+
+		if err := c.SaveUploadedFile(file, filePath); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":   "Failed to save file",
+				"details": err.Error(),
+			})
+			return
+		}
+	}
+
+	newLetter := &models.OutgoingLetter{
+		OutgoingNumber:   letter.InternalNumber,
+		RegistrationDate: regDate,
+		Subject:          letter.Subject,
+		Executor:         letter.Executor,
+		FilePath:         filePath,
+		Recipient:        letter.Recipient,
+	}
+
+	if err := h.storage.CreateOutgoingLetter(newLetter); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to create outgoing letter",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, newLetter)
+}
+
+// CreateIncomingLetter - создание входящего письма
+func (h *LetterHandler) CreateIncomingLetter(c *gin.Context) {
+	var letter struct {
+		InternalNumber   string `form:"internal_number" binding:"required"`
+		ExternalNumber   string `form:"external_number"`
+		RegistrationDate string `form:"registration_date" binding:"required"`
+		Sender           string `form:"sender" binding:"required"`
+		Addressee        string `form:"addressee" binding:"required"`
+		Subject          string `form:"subject" binding:"required"`
+		Executor         string `form:"executor" binding:"required"`
+		RegisteredBy     string `form:"registered_by" binding:"required"`
+	}
+
+	if err := c.ShouldBind(&letter); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid input data",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Парсим дату
+	regDate, err := time.Parse("2006-01-02", letter.RegistrationDate)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid date format",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Обрабатываем файл
+	filePath := ""
+	file, err := c.FormFile("file")
+	if err == nil {
+		// Сохраняем файл
+		uploadPath := "./files/incoming"
+		os.MkdirAll(uploadPath, 0755)
+
+		filename := fmt.Sprintf("%d_%s", time.Now().Unix(), file.Filename)
+		filePath = filepath.Join(uploadPath, filename)
+
+		if err := c.SaveUploadedFile(file, filePath); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":   "Failed to save file",
+				"details": err.Error(),
+			})
+			return
+		}
+	}
+
+	newLetter := &models.IncomingLetter{
+		IncomingNumber:   letter.InternalNumber,
+		RegistrationDate: regDate,
+		Subject:          letter.Subject,
+		FilePath:         filePath,
+		ExternalNumber:   letter.ExternalNumber,
+		Sender:           letter.Sender,
+		Addressee:        letter.Addressee,
+		RegisteredBy:     letter.RegisteredBy,
+	}
+
+	if err := h.storage.CreateIncomingLetter(newLetter); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to create incoming letter",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, newLetter)
 }
 
 // GetAllIncomingLetters - получение всех входящих писем
