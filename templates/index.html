@@ -85,6 +85,98 @@
         </div>
     </div>
 
+        <!-- Модальное окно редактирования -->
+    <div id="editModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="editModalTitle">Редактирование письма</h2>
+                <button class="close-btn" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" id="editId">
+                    <input type="hidden" id="editType">
+                    
+                    <!-- Общие поля -->
+                    <div class="form-group">
+                        <label for="editSubject">Краткое содержание:</label>
+                        <textarea id="editSubject" name="subject" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editRegistrationDate">Дата регистрации:</label>
+                        <input type="date" id="editRegistrationDate" name="registration_date" required>
+                    </div>
+
+                    <!-- Поля для исходящих писем -->
+                    <div id="outgoingFields" class="letter-fields">
+                        <div class="form-group">
+                            <label for="editOutgoingNumber">Исходящий номер:</label>
+                            <input type="text" id="editOutgoingNumber" name="outgoing_number" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editRecipient">Адресат:</label>
+                            <input type="text" id="editRecipient" name="recipient" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editExecutor">Исполнитель:</label>
+                            <select id="editExecutor" name="executor" required>
+                                <option value="">Выберите исполнителя</option>
+                                <option value="Кедров">Кедров</option>
+                                <option value="Дроздовский">Дроздовский</option>
+                                <option value="Шехавцов">Шехавцов</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Поля для входящих писем -->
+                    <div id="incomingFields" class="letter-fields" style="display: none;">
+                        <div class="form-group">
+                            <label for="editInternalNumber">Входящий номер:</label>
+                            <input type="text" id="editInternalNumber" name="internal_number" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editExternalNumber">Внешний номер:</label>
+                            <input type="text" id="editExternalNumber" name="external_number">
+                        </div>
+                        <div class="form-group">
+                            <label for="editSender">Отправитель:</label>
+                            <input type="text" id="editSender" name="sender" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editAddressee">Адресат:</label>
+                            <input type="text" id="editAddressee" name="addressee" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editRegisteredBy">Зарегистрировал:</label>
+                            <select id="editRegisteredBy" name="registered_by" required>
+                                <option value="">Выберите сотрудника</option>
+                                <option value="Кедров">Кедров</option>
+                                <option value="Дроздовский">Дроздовский</option>
+                                <option value="Шехавцов">Шехавцов</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Поле для загрузки файла -->
+                    <div class="form-group">
+                        <label for="editFile">Прикрепленный файл:</label>
+                        <input type="file" id="editFile" name="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                        <div id="currentFileInfo" class="file-info" style="display: none;">
+                            <small>Текущий файл: <span id="currentFileName"></span></small>
+                            <button type="button" class="btn-remove-file" onclick="removeFile()">🗑️ Удалить</button>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-cancel" onclick="closeEditModal()">Отмена</button>
+                        <button type="submit" class="btn btn-save">Сохранить изменения</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="../static/script.js"></script>
 </body>
 </html>

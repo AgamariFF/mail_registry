@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"mail_registry/internal/excel"
 	"mail_registry/internal/models"
 	"mail_registry/internal/storage"
 
@@ -72,6 +73,46 @@ func (h *LetterHandler) DownloadOutgoingLetter(c *gin.Context) {
 	}
 
 	letter, err := h.storage.GetOutgoingLetterByID(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Letter not found",
+		})
+		return
+	}
+
+	if letter.FilePath == "" {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "File not found",
+		})
+		return
+	}
+
+	if _, err := os.Stat(letter.FilePath); os.IsNotExist(err) {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "File does not exist on server",
+		})
+		return
+	}
+
+	filename := filepath.Base(letter.FilePath)
+
+	c.Header("Content-Disposition", "attachment; filename="+filename)
+	c.Header("Content-Type", "application/octet-stream")
+
+	c.File(letter.FilePath)
+}
+
+// DownloadIncomingLetter - скачивание файла письма
+func (h *LetterHandler) DownloadIncomingLetter(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid ID format",
+		})
+		return
+	}
+
+	letter, err := h.storage.GetIncomingLetterByID(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": "Letter not found",
@@ -362,4 +403,30 @@ func (h *LetterHandler) DeleteIncomingLetter(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Incoming letter deleted successfully",
 	})
+}
+
+func (h *LetterHandler) DownloadExcel(c *gin.Context) {
+	fileName := "Mail_registry.xlsx"
+
+	excelFile, err := excel.ToExcel(h.storage)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Error filling excel file",
+		})
+		return
+	}
+
+	if err := excelFile.SaveAs(fileName); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Error creating excel file",
+		})
+		return
+	}
+
+	c.Header("Content-Disposition", "attachment; filename="+fileName)
+	c.Header("Content-Type", "application/octet-stream")
+
+	c.File("./" + fileName)
+
+	os.Remove("./" + fileName)
 }

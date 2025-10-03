@@ -27,6 +27,8 @@ func SetupRouter(store *storage.Storage) *gin.Engine {
 			c.JSON(200, gin.H{"status": "OK", "service": "mail"})
 		})
 
+		mailGroup.GET("/downloadExcel", letterHandler.DownloadExcel)
+
 		// Исходящие письма
 		mailGroup.GET("/outgoing", letterHandler.GetAllOutgoingLetters)
 		mailGroup.GET("/outgoing/:id", letterHandler.GetOutgoingLetterByID)
@@ -40,6 +42,7 @@ func SetupRouter(store *storage.Storage) *gin.Engine {
 		// Входящие письма
 		mailGroup.GET("/incoming", letterHandler.GetAllIncomingLetters)
 		mailGroup.GET("/incoming/:id", letterHandler.GetIncomingLetterByID)
+		mailGroup.GET("/incoming/:id/download", letterHandler.DownloadIncomingLetter)
 		mailGroup.POST("/incoming", letterHandler.CreateIncomingLetter)
 		mailGroup.DELETE("/incoming/:id", letterHandler.DeleteIncomingLetter)
 		mailGroup.GET("/addInc", func(c *gin.Context) {

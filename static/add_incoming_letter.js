@@ -16,7 +16,6 @@ function toggleIncomingAuthor() {
     
     if (authorSelect.value === 'other') {
         customAuthor.style.display = 'block';
-        authorSelect.value = '';
     } else {
         customAuthor.style.display = 'none';
         document.getElementById('incomingAuthorInput').value = '';
@@ -30,7 +29,6 @@ function toggleAddressee() {
     
     if (addresseeSelect.value === 'other') {
         customAddressee.style.display = 'block';
-        addresseeSelect.value = '';
     } else {
         customAddressee.style.display = 'none';
         document.getElementById('addresseeInput').value = '';

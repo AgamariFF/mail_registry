@@ -16,7 +16,6 @@ function toggleOutgoingAuthor() {
     
     if (authorSelect.value === 'other') {
         customAuthor.style.display = 'block';
-        authorSelect.value = '';
     } else {
         customAuthor.style.display = 'none';
         document.getElementById('outgoingAuthorInput').value = '';
