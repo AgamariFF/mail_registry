@@ -23,16 +23,28 @@ func SetupRouter(store *storage.Storage) *gin.Engine {
 		})
 
 		// API endpoints
-		mailGroup.GET("/outgoing", letterHandler.GetAllOutgoingLetters)
-		mailGroup.GET("/incoming", letterHandler.GetAllIncomingLetters)
-		mailGroup.GET("/outgoing/:id", letterHandler.GetOutgoingLetterByID)
-		mailGroup.GET("/incoming/:id", letterHandler.GetIncomingLetterByID)
 		mailGroup.GET("/health", func(c *gin.Context) {
 			c.JSON(200, gin.H{"status": "OK", "service": "mail"})
 		})
+
+		// Исходящие письма
+		mailGroup.GET("/outgoing", letterHandler.GetAllOutgoingLetters)
+		mailGroup.GET("/outgoing/:id", letterHandler.GetOutgoingLetterByID)
 		mailGroup.GET("/outgoing/:id/download", letterHandler.DownloadOutgoingLetter)
 		mailGroup.POST("/outgoing", letterHandler.CreateOutgoingLetter)
+		mailGroup.DELETE("/outgoing/:id", letterHandler.DeleteOutgoingLetter)
+		mailGroup.GET("/addOut", func(c *gin.Context) {
+			c.HTML(200, "add_outgoing_letter.html", nil)
+		})
+
+		// Входящие письма
+		mailGroup.GET("/incoming", letterHandler.GetAllIncomingLetters)
+		mailGroup.GET("/incoming/:id", letterHandler.GetIncomingLetterByID)
 		mailGroup.POST("/incoming", letterHandler.CreateIncomingLetter)
+		mailGroup.DELETE("/incoming/:id", letterHandler.DeleteIncomingLetter)
+		mailGroup.GET("/addInc", func(c *gin.Context) {
+			c.HTML(200, "add_incoming_letter.html", nil)
+		})
 	}
 
 	return router

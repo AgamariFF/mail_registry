@@ -14,7 +14,7 @@ type OutgoingLetter struct {
 
 type IncomingLetter struct {
 	ID               int       `json:"id"`
-	IncomingNumber   string    `json:"incoming_number"`
+	InternalNumber   string    `json:"internal_number"`
 	ExternalNumber   string    `json:"external_number"`
 	RegistrationDate time.Time `json:"registration_date"`
 	Sender           string    `json:"sender"`

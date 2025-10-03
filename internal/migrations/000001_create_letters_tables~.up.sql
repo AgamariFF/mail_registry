@@ -1,7 +1,7 @@
 -- Таблица для исходящих писем
 CREATE TABLE outgoing_letters (
     id SERIAL PRIMARY KEY,
-    internal_number VARCHAR(50) NOT NULL,
+    outgoing_number VARCHAR(50) NOT NULL,
     registration_date TIMESTAMP WITH TIME ZONE NOT NULL,
     recipient VARCHAR(255) NOT NULL,
     subject TEXT NOT NULL,

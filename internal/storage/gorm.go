@@ -17,7 +17,6 @@ func NewStorage(dsn string) (*Storage, error) {
 		return nil, err
 	}
 
-	// Автомиграция - создает/обновляет таблицы по моделям
 	err = db.AutoMigrate(
 		&models.OutgoingLetter{},
 		&models.IncomingLetter{},
@@ -84,4 +83,28 @@ func (s *Storage) SearchByInternalNumber(number string) (interface{}, error) {
 	}
 
 	return result, nil
+}
+
+// DeleteOutgoingLetter - удаление исходящего письма
+func (s *Storage) DeleteOutgoingLetter(id int) error {
+	result := s.db.Delete(&models.OutgoingLetter{}, id)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
+}
+
+// DeleteIncomingLetter - удаление входящего письма
+func (s *Storage) DeleteIncomingLetter(id int) error {
+	result := s.db.Delete(&models.IncomingLetter{}, id)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }

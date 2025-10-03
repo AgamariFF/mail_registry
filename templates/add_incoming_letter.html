@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Добавить письмо - Почтовый реестр</title>
+    <title>Добавить входящее письмо - Почтовый реестр</title>
     <link rel="stylesheet" href="../static/style.css">
 </head>
 <body>
     <div class="container">
         <!-- Шапка -->
         <div class="header">
-            <h1>Добавить новое письмо</h1>
+            <h1>Добавить новое входящее письмо</h1>
             <div class="subtitle">
-                <span>Заполните информацию о письме</span>
+                <span>Заполните информацию о входящем письме</span>
             </div>
         </div>
 
@@ -21,31 +21,18 @@
             <a href="/mail/" class="back-link">← Назад к списку писем</a>
         </div>
 
-        <!-- Форма добавления письма -->
+        <!-- Форма добавления входящего письма -->
         <div class="form-container">
-            <form id="addLetterForm" class="letter-form">
-                <!-- Выбор типа письма -->
-                <div class="form-section">
-                    <h3>Тип письма</h3>
-                    <div class="form-group large">
-                        <label for="letterType">Тип письма *</label>
-                        <select id="letterType" name="type" required onchange="toggleLetterFields()">
-                            <option value="">Выберите тип</option>
-                            <option value="outgoing">Исходящее</option>
-                            <option value="incoming">Входящее</option>
-                        </select>
-                    </div>
-                </div>
-
+            <form id="addIncomingLetterForm" class="letter-form">
                 <!-- Общие поля -->
                 <div class="form-section">
                     <h3>Общая информация</h3>
                     
                     <div class="form-row">
                         <div class="form-group large">
-                            <label for="internalNumber" id="internalNumberLabel">Исходящий номер *</label>
+                            <label for="internalNumber">Входящий номер *</label>
                             <input type="text" id="internalNumber" name="internal_number" required 
-                                   placeholder="Например: 281-СКС">
+                                   placeholder="Например: 50">
                         </div>
                         <div class="form-group large">
                             <label for="registrationDate">Дата регистрации *</label>
@@ -60,40 +47,8 @@
                     </div>
                 </div>
 
-                <!-- Поля для исходящих писем -->
-                <div id="outgoingFields" class="form-section letter-fields">
-                    <h3>Информация об исходящем письме</h3>
-                    
-                    <div class="form-group large">
-                        <label for="recipient">Адресат *</label>
-                        <input type="text" id="recipient" name="recipient" 
-                               placeholder="Например: ПАО ИЛ, Нижнекамская ТЭЦ">
-                    </div>
-
-                    <div class="form-group large">
-                        <label>Исполнитель *</label>
-                        <div class="author-options">
-                            <select id="outgoingAuthor" name="outgoing_author" required onchange="toggleOutgoingAuthor()">
-                                <option value="">Выберите исполнителя</option>
-                                <option value="Кедров">Кедров</option>
-                                <option value="Дроздовский">Дроздовский</option>
-                                <option value="Шехавцов">Шехавцов</option>
-                                <option value="Исаев">Исаев</option>
-                                <option value="Шевченко">Шевченко</option>
-                                <option value="Степнов">Степнов</option>
-                                <option value="Сад">Сад</option>
-                                <option value="other">Другой сотрудник</option>
-                            </select>
-                        </div>
-                        <div id="outgoingAuthorCustom" class="custom-author" style="display: none;">
-                            <input type="text" id="outgoingAuthorInput" name="outgoing_author_custom" 
-                                   placeholder="Введите ФИО сотрудника">
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Поля для входящих писем -->
-                <div id="incomingFields" class="form-section letter-fields" style="display: none;">
+                <div class="form-section">
                     <h3>Информация о входящем письме</h3>
                     
                     <div class="form-group large">
@@ -128,7 +83,7 @@
                     <div class="form-group large">
                         <label>Зарегистрировал *</label>
                         <div class="author-options">
-                            <select id="incomingAuthor" name="incoming_author" required onchange="toggleIncomingAuthor()">
+                            <select id="incomingAuthor" name="registered_by" required onchange="toggleIncomingAuthor()">
                                 <option value="">Выберите сотрудника</option>
                                 <option value="Кедров">Кедров</option>
                                 <option value="Дроздовский">Дроздовский</option>
@@ -141,7 +96,7 @@
                             </select>
                         </div>
                         <div id="incomingAuthorCustom" class="custom-author" style="display: none;">
-                            <input type="text" id="incomingAuthorInput" name="incoming_author_custom" 
+                            <input type="text" id="incomingAuthorInput" name="registered_by_custom" 
                                 placeholder="Введите ФИО сотрудника">
                         </div>
                     </div>
@@ -169,6 +124,6 @@
     <!-- Уведомления -->
     <div id="notificationContainer"></div>
 
-    <script src="../static/add_letter.js"></script>
+    <script src="../static/add_incoming_letter.js"></script>
 </body>
 </html>

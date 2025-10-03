@@ -104,7 +104,7 @@ func (h *LetterHandler) DownloadOutgoingLetter(c *gin.Context) {
 // CreateOutgoingLetter - создание исходящего письма
 func (h *LetterHandler) CreateOutgoingLetter(c *gin.Context) {
 	var letter struct {
-		InternalNumber   string `form:"internal_number" binding:"required"`
+		OutgoingNumber   string `form:"outgoing_number" binding:"required"`
 		RegistrationDate string `form:"registration_date" binding:"required"`
 		Recipient        string `form:"recipient" binding:"required"`
 		Subject          string `form:"subject" binding:"required"`
@@ -150,7 +150,7 @@ func (h *LetterHandler) CreateOutgoingLetter(c *gin.Context) {
 	}
 
 	newLetter := &models.OutgoingLetter{
-		OutgoingNumber:   letter.InternalNumber,
+		OutgoingNumber:   letter.OutgoingNumber,
 		RegistrationDate: regDate,
 		Subject:          letter.Subject,
 		Executor:         letter.Executor,
@@ -173,12 +173,11 @@ func (h *LetterHandler) CreateOutgoingLetter(c *gin.Context) {
 func (h *LetterHandler) CreateIncomingLetter(c *gin.Context) {
 	var letter struct {
 		InternalNumber   string `form:"internal_number" binding:"required"`
-		ExternalNumber   string `form:"external_number"`
+		ExternalNumber   string `form:"external_number" binding:"required"`
 		RegistrationDate string `form:"registration_date" binding:"required"`
 		Sender           string `form:"sender" binding:"required"`
 		Addressee        string `form:"addressee" binding:"required"`
 		Subject          string `form:"subject" binding:"required"`
-		Executor         string `form:"executor" binding:"required"`
 		RegisteredBy     string `form:"registered_by" binding:"required"`
 	}
 
@@ -221,7 +220,7 @@ func (h *LetterHandler) CreateIncomingLetter(c *gin.Context) {
 	}
 
 	newLetter := &models.IncomingLetter{
-		IncomingNumber:   letter.InternalNumber,
+		InternalNumber:   letter.InternalNumber,
 		RegistrationDate: regDate,
 		Subject:          letter.Subject,
 		FilePath:         filePath,
@@ -261,4 +260,106 @@ func (h *LetterHandler) GetIncomingLetterByID(c *gin.Context) {
 		return
 	}
 	c.JSON(200, letter)
+}
+
+// DeleteOutgoingLetter - удаление исходящего письма
+func (h *LetterHandler) DeleteOutgoingLetter(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid ID format",
+		})
+		return
+	}
+
+	// Сначала получаем письмо чтобы удалить файл если есть
+	letter, err := h.storage.GetOutgoingLetterByID(id)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "Letter not found",
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to fetch letter",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Удаляем файл если он существует
+	if letter.FilePath != "" {
+		if err := os.Remove(letter.FilePath); err != nil && !os.IsNotExist(err) {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":   "Failed to delete file",
+				"details": err.Error(),
+			})
+			return
+		}
+	}
+
+	// Удаляем запись из БД
+	if err := h.storage.DeleteOutgoingLetter(id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to delete outgoing letter",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Outgoing letter deleted successfully",
+	})
+}
+
+// DeleteIncomingLetter - удаление входящего письма
+func (h *LetterHandler) DeleteIncomingLetter(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid ID format",
+		})
+		return
+	}
+
+	// Сначала получаем письмо чтобы удалить файл если есть
+	letter, err := h.storage.GetIncomingLetterByID(id)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "Letter not found",
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to fetch letter",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Удаляем файл если он существует
+	if letter.FilePath != "" {
+		if err := os.Remove(letter.FilePath); err != nil && !os.IsNotExist(err) {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":   "Failed to delete file",
+				"details": err.Error(),
+			})
+			return
+		}
+	}
+
+	// Удаляем запись из БД
+	if err := h.storage.DeleteIncomingLetter(id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to delete incoming letter",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Incoming letter deleted successfully",
+	})
 }

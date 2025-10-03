@@ -17,15 +17,26 @@
             </div>
         </div>
 
+        <!-- Переключатель разделов -->
+        <div class="section-switcher">
+            <button class="switch-btn active" data-section="outgoing">Исходящие</button>
+            <button class="switch-btn" data-section="incoming">Входящие</button>
+        </div>
+
         <!-- Панель инструментов -->
         <div class="toolbar">
-            <a href="/mail/add" class="add-btn">
+            <p>Добавить письмо:</p>
+            <a href="/mail/addOut" class="add-btn">
                 <span>+</span>
-                Добавить письмо
+                Исходящее
+            </a>
+            <a href="/mail/addInc" class="add-btn">
+                <span>+</span>
+                Входящее
             </a>
             
             <div class="filters">
-                <input type="text" class="search-box" placeholder="Поиск по номеру или содержанию..." id="searchInput">
+                <input type="text" class="search-box" placeholder="Поиск..." id="searchInput">
                 <select class="search-box" id="executorFilter">
                     <option value="">Все исполнители</option>
                     <option value="Кедров">Кедров</option>
@@ -35,8 +46,8 @@
             </div>
         </div>
 
-        <!-- Таблица с письмами -->
-        <div class="table-container">
+        <!-- Таблица для исходящих писем -->
+        <div id="outgoingTable" class="table-container">
             <table>
                 <thead>
                     <tr>
@@ -48,7 +59,26 @@
                         <th>Действия</th>
                     </tr>
                 </thead>
-                <tbody id="lettersTable">
+                <tbody id="outgoingLettersTable">
+                    <!-- Данные будут загружены через JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Таблица для входящих писем -->
+        <div id="incomingTable" class="table-container" style="display: none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Входящий номер</th>
+                        <th>Дата регистрации</th>
+                        <th>Отправитель</th>
+                        <th>Краткое содержание</th>
+                        <th>Зарегистрировал</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="incomingLettersTable">
                     <!-- Данные будут загружены через JavaScript -->
                 </tbody>
             </table>
