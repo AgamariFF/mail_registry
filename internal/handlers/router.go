@@ -35,6 +35,7 @@ func SetupRouter(store *storage.Storage) *gin.Engine {
 		mailGroup.GET("/outgoing/:id/download", letterHandler.DownloadOutgoingLetter)
 		mailGroup.POST("/outgoing", letterHandler.CreateOutgoingLetter)
 		mailGroup.DELETE("/outgoing/:id", letterHandler.DeleteOutgoingLetter)
+		mailGroup.PUT("outgoing/:id", letterHandler.UpdateOutgoingLetter)
 		mailGroup.GET("/addOut", func(c *gin.Context) {
 			c.HTML(200, "add_outgoing_letter.html", nil)
 		})
@@ -45,6 +46,7 @@ func SetupRouter(store *storage.Storage) *gin.Engine {
 		mailGroup.GET("/incoming/:id/download", letterHandler.DownloadIncomingLetter)
 		mailGroup.POST("/incoming", letterHandler.CreateIncomingLetter)
 		mailGroup.DELETE("/incoming/:id", letterHandler.DeleteIncomingLetter)
+		mailGroup.PUT("incoming/:id", letterHandler.UpdateIncomingLetter)
 		mailGroup.GET("/addInc", func(c *gin.Context) {
 			c.HTML(200, "add_incoming_letter.html", nil)
 		})

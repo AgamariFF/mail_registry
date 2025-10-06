@@ -112,20 +112,15 @@
                     <div id="outgoingFields" class="letter-fields">
                         <div class="form-group">
                             <label for="editOutgoingNumber">Исходящий номер:</label>
-                            <input type="text" id="editOutgoingNumber" name="outgoing_number" required>
+                            <input type="text" id="editOutgoingNumber" name="outgoing_number">
                         </div>
                         <div class="form-group">
                             <label for="editRecipient">Адресат:</label>
-                            <input type="text" id="editRecipient" name="recipient" required>
+                            <input type="text" id="editRecipient" name="recipient">
                         </div>
                         <div class="form-group">
                             <label for="editExecutor">Исполнитель:</label>
-                            <select id="editExecutor" name="executor" required>
-                                <option value="">Выберите исполнителя</option>
-                                <option value="Кедров">Кедров</option>
-                                <option value="Дроздовский">Дроздовский</option>
-                                <option value="Шехавцов">Шехавцов</option>
-                            </select>
+                            <input type="text" id="editExecutor" name="executor">
                         </div>
                     </div>
 
@@ -133,7 +128,7 @@
                     <div id="incomingFields" class="letter-fields" style="display: none;">
                         <div class="form-group">
                             <label for="editInternalNumber">Входящий номер:</label>
-                            <input type="text" id="editInternalNumber" name="internal_number" required>
+                            <input type="text" id="editInternalNumber" name="internal_number">
                         </div>
                         <div class="form-group">
                             <label for="editExternalNumber">Внешний номер:</label>
@@ -141,20 +136,15 @@
                         </div>
                         <div class="form-group">
                             <label for="editSender">Отправитель:</label>
-                            <input type="text" id="editSender" name="sender" required>
+                            <input type="text" id="editSender" name="sender">
                         </div>
                         <div class="form-group">
                             <label for="editAddressee">Адресат:</label>
-                            <input type="text" id="editAddressee" name="addressee" required>
+                            <input type="text" id="editAddressee" name="addressee">
                         </div>
                         <div class="form-group">
                             <label for="editRegisteredBy">Зарегистрировал:</label>
-                            <select id="editRegisteredBy" name="registered_by" required>
-                                <option value="">Выберите сотрудника</option>
-                                <option value="Кедров">Кедров</option>
-                                <option value="Дроздовский">Дроздовский</option>
-                                <option value="Шехавцов">Шехавцов</option>
-                            </select>
+                            <input type="text" id="editRegisteredBy" name="registered_by"> 
                         </div>
                     </div>
 
@@ -175,7 +165,7 @@
                 </form>
             </div>
         </div>
-    </div>
+    </div>    
 
     <script src="../static/script.js"></script>
 </body>

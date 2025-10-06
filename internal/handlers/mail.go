@@ -430,3 +430,271 @@ func (h *LetterHandler) DownloadExcel(c *gin.Context) {
 
 	os.Remove("./" + fileName)
 }
+
+// UpdateOutgoingLetter - обновление исходящего письма
+func (h *LetterHandler) UpdateOutgoingLetter(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid ID format",
+		})
+		return
+	}
+
+	// Получаем существующее письмо
+	existingLetter, err := h.storage.GetOutgoingLetterByID(id)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "Letter not found",
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to fetch letter",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	var updateData struct {
+		OutgoingNumber   string `form:"outgoing_number"`
+		RegistrationDate string `form:"registration_date"`
+		Recipient        string `form:"recipient"`
+		Subject          string `form:"subject"`
+		Executor         string `form:"executor"`
+		RemoveFile       string `form:"remove_file"`
+	}
+
+	if err := c.ShouldBind(&updateData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid input data",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Обновляем поля если они переданы
+	if updateData.OutgoingNumber != "" {
+		existingLetter.OutgoingNumber = updateData.OutgoingNumber
+	}
+	if updateData.Recipient != "" {
+		existingLetter.Recipient = updateData.Recipient
+	}
+	if updateData.Subject != "" {
+		existingLetter.Subject = updateData.Subject
+	}
+	if updateData.Executor != "" {
+		existingLetter.Executor = updateData.Executor
+	}
+
+	// Обновляем дату если передана
+	if updateData.RegistrationDate != "" {
+		regDate, err := time.Parse("2006-01-02", updateData.RegistrationDate)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error":   "Invalid date format",
+				"details": err.Error(),
+			})
+			return
+		}
+		existingLetter.RegistrationDate = regDate
+	}
+
+	// Обрабатываем удаление файла
+	if updateData.RemoveFile == "true" {
+		if existingLetter.FilePath != "" {
+			if err := os.Remove(existingLetter.FilePath); err != nil && !os.IsNotExist(err) {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error":   "Failed to delete file",
+					"details": err.Error(),
+				})
+				return
+			}
+			existingLetter.FilePath = ""
+		}
+	}
+
+	// Обрабатываем загрузку нового файла
+	file, err := c.FormFile("file")
+	if err == nil {
+		// Удаляем старый файл если он есть
+		if existingLetter.FilePath != "" {
+			if err := os.Remove(existingLetter.FilePath); err != nil && !os.IsNotExist(err) {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error":   "Failed to delete old file",
+					"details": err.Error(),
+				})
+				return
+			}
+		}
+
+		// Сохраняем новый файл
+		uploadPath := "./files/outgoing"
+		os.MkdirAll(uploadPath, 0755)
+
+		filename := fmt.Sprintf("%d_%s", time.Now().Unix(), file.Filename)
+		filePath := filepath.Join(uploadPath, filename)
+
+		if err := c.SaveUploadedFile(file, filePath); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":   "Failed to save file",
+				"details": err.Error(),
+			})
+			return
+		}
+		existingLetter.FilePath = filePath
+	}
+
+	// Сохраняем обновленное письмо
+	if err := h.storage.UpdateOutgoingLetter(existingLetter); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to update outgoing letter",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Outgoing letter updated successfully",
+		"letter":  existingLetter,
+	})
+}
+
+// UpdateIncomingLetter - обновление входящего письма
+func (h *LetterHandler) UpdateIncomingLetter(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid ID format",
+		})
+		return
+	}
+
+	// Получаем существующее письмо
+	existingLetter, err := h.storage.GetIncomingLetterByID(id)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "Letter not found",
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to fetch letter",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	var updateData struct {
+		InternalNumber   string `form:"internal_number"`
+		ExternalNumber   string `form:"external_number"`
+		RegistrationDate string `form:"registration_date"`
+		Sender           string `form:"sender"`
+		Addressee        string `form:"addressee"`
+		Subject          string `form:"subject"`
+		RegisteredBy     string `form:"registered_by"`
+		RemoveFile       string `form:"remove_file"`
+	}
+
+	if err := c.ShouldBind(&updateData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid input data",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Обновляем поля если они переданы
+	if updateData.InternalNumber != "" {
+		existingLetter.InternalNumber = updateData.InternalNumber
+	}
+	if updateData.ExternalNumber != "" {
+		existingLetter.ExternalNumber = updateData.ExternalNumber
+	}
+	if updateData.Sender != "" {
+		existingLetter.Sender = updateData.Sender
+	}
+	if updateData.Addressee != "" {
+		existingLetter.Addressee = updateData.Addressee
+	}
+	if updateData.Subject != "" {
+		existingLetter.Subject = updateData.Subject
+	}
+	if updateData.RegisteredBy != "" {
+		existingLetter.RegisteredBy = updateData.RegisteredBy
+	}
+
+	// Обновляем дату если передана
+	if updateData.RegistrationDate != "" {
+		regDate, err := time.Parse("2006-01-02", updateData.RegistrationDate)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error":   "Invalid date format",
+				"details": err.Error(),
+			})
+			return
+		}
+		existingLetter.RegistrationDate = regDate
+	}
+
+	// Обрабатываем удаление файла
+	if updateData.RemoveFile == "true" {
+		if existingLetter.FilePath != "" {
+			if err := os.Remove(existingLetter.FilePath); err != nil && !os.IsNotExist(err) {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error":   "Failed to delete file",
+					"details": err.Error(),
+				})
+				return
+			}
+			existingLetter.FilePath = ""
+		}
+	}
+
+	// Обрабатываем загрузку нового файла
+	file, err := c.FormFile("file")
+	if err == nil {
+		// Удаляем старый файл если он есть
+		if existingLetter.FilePath != "" {
+			if err := os.Remove(existingLetter.FilePath); err != nil && !os.IsNotExist(err) {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error":   "Failed to delete old file",
+					"details": err.Error(),
+				})
+				return
+			}
+		}
+
+		// Сохраняем новый файл
+		uploadPath := "./files/incoming"
+		os.MkdirAll(uploadPath, 0755)
+
+		filename := fmt.Sprintf("%d_%s", time.Now().Unix(), file.Filename)
+		filePath := filepath.Join(uploadPath, filename)
+
+		if err := c.SaveUploadedFile(file, filePath); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":   "Failed to save file",
+				"details": err.Error(),
+			})
+			return
+		}
+		existingLetter.FilePath = filePath
+	}
+
+	// Сохраняем обновленное письмо
+	if err := h.storage.UpdateIncomingLetter(existingLetter); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to update incoming letter",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Incoming letter updated successfully",
+		"letter":  existingLetter,
+	})
+}

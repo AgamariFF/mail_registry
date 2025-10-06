@@ -108,3 +108,12 @@ func (s *Storage) DeleteIncomingLetter(id int) error {
 	}
 	return nil
 }
+
+func (s *Storage) UpdateOutgoingLetter(letter *models.OutgoingLetter) error {
+	return s.db.Save(letter).Error
+}
+
+// UpdateIncomingLetter - обновление входящего письма
+func (s *Storage) UpdateIncomingLetter(letter *models.IncomingLetter) error {
+	return s.db.Save(letter).Error
+}

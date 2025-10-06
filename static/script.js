@@ -308,21 +308,6 @@ function closeModal(element) {
     }
 }
 
-// Добавьте эту анимацию в CSS
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes fadeOut {
-        from {
-            opacity: 1;
-            transform: scale(1);
-        }
-        to {
-            opacity: 0;
-            transform: scale(0.9);
-        }
-    }
-`;
-document.head.appendChild(style);
 
 function formatDate(dateString) {
     const date = new Date(dateString);
@@ -389,98 +374,146 @@ async function deleteLetter(id, type) {
     }
 }
 
-// Функция редактирования письма
+// Функция редактирования письма (полностью переписанная)
 async function editLetter(id, type) {
     try {
-        // Загружаем данные письма
+        console.log(`Загрузка письма ${type} #${id} для редактирования...`);
+        
         const response = await fetch(`${API_BASE_URL}/${type}/${id}`);
         if (!response.ok) {
-            throw new Error('Письмо не найдено');
+            throw new Error(`Ошибка сервера: ${response.status}`);
         }
-        const letter = await response.json();
         
-        // Открываем модальное окно редактирования
-        openEditModal(letter, type);
+        const letter = await response.json();
+        console.log('Письмо загружено:', letter);
+        
+        await openEditModal(letter, type);
     } catch (error) {
         console.error('Ошибка при загрузке письма для редактирования:', error);
-        showNotification('Не удалось загрузить данные письма', 'error');
+        showNotification(`Не удалось загрузить данные письма: ${error.message}`, 'error');
     }
 }
 
-// Открытие модального окна редактирования
-function openEditModal(letter, type) {
-    const modal = document.getElementById('editModal');
-    const form = document.getElementById('editForm');
-    
-    // Сбрасываем форму
-    form.reset();
-    
-    // Заполняем скрытые поля
-    document.getElementById('editId').value = letter.id;
-    document.getElementById('editType').value = type;
-    
-    // Устанавливаем заголовок
-    document.getElementById('editModalTitle').textContent = 
-        `Редактирование ${type === 'outgoing' ? 'исходящего' : 'входящего'} письма`;
-    
-    // Показываем/скрываем соответствующие поля
-    document.getElementById('outgoingFields').style.display = 
-        type === 'outgoing' ? 'block' : 'none';
-    document.getElementById('incomingFields').style.display = 
-        type === 'incoming' ? 'block' : 'none';
-    
-    // Заполняем общие поля
-    document.getElementById('editSubject').value = letter.subject || '';
-    
-    // Форматируем дату для input[type="date"]
-    if (letter.registration_date) {
-        const date = new Date(letter.registration_date);
-        const formattedDate = date.toISOString().split('T')[0];
-        document.getElementById('editRegistrationDate').value = formattedDate;
-    }
-    
-    // Заполняем поля в зависимости от типа письма
-    if (type === 'outgoing') {
-        document.getElementById('editOutgoingNumber').value = letter.outgoing_number || '';
-        document.getElementById('editRecipient').value = letter.recipient || '';
-        document.getElementById('editExecutor').value = letter.executor || '';
-    } else {
-        document.getElementById('editInternalNumber').value = letter.internal_number || '';
-        document.getElementById('editExternalNumber').value = letter.external_number || '';
-        document.getElementById('editSender').value = letter.sender || '';
-        document.getElementById('editAddressee').value = letter.addressee || '';
-        document.getElementById('editRegisteredBy').value = letter.registered_by || '';
-    }
-    
-    // Обработка информации о файле
-    const fileInfo = document.getElementById('currentFileInfo');
-    const currentFileName = document.getElementById('currentFileName');
-    
-    if (letter.file_path) {
-        const fileName = letter.file_path.split('/').pop();
-        currentFileName.textContent = fileName;
-        fileInfo.style.display = 'block';
-        document.getElementById('removeFileFlag').value = 'false';
-    } else {
-        fileInfo.style.display = 'none';
-    }
-    
-    // Показываем модальное окно
-    modal.style.display = 'block';
-    
-    // Добавляем обработчики событий
-    modal.addEventListener('click', handleModalClick);
-    document.addEventListener('keydown', handleEscapeKey);
+// Открытие модального окна редактирования (исправленная)
+async function openEditModal(letter, type) {
+
+    console.log('Открытие модального окна для письма:', letter);
+    debugFileIssue(letter);
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            try {
+                const modal = document.getElementById('editModal');
+                const form = document.getElementById('editForm');
+                
+                if (!modal || !form) {
+                    throw new Error('Элементы модального окна не найдены');
+                }
+
+                // Сбрасываем форму
+                form.reset();
+                
+                // Очищаем старые hidden поля
+                const oldRemoveFlag = document.getElementById('removeFileFlag');
+                if (oldRemoveFlag) {
+                    oldRemoveFlag.remove();
+                }
+
+                // Заполняем скрытые поля
+                document.getElementById('editId').value = letter.id || '';
+                document.getElementById('editType').value = type || '';
+                
+                // Устанавливаем заголовок
+                document.getElementById('editModalTitle').textContent = 
+                    `Редактирование ${type === 'outgoing' ? 'исходящего' : 'входящего'} письма`;
+                
+                // Показываем/скрываем соответствующие поля
+                const outgoingFields = document.getElementById('outgoingFields');
+                const incomingFields = document.getElementById('incomingFields');
+                
+                if (outgoingFields && incomingFields) {
+                    outgoingFields.style.display = type === 'outgoing' ? 'block' : 'none';
+                    incomingFields.style.display = type === 'incoming' ? 'block' : 'none';
+                }
+                
+                // Заполняем общие поля
+                document.getElementById('editSubject').value = letter.subject || '';
+                
+                // Форматируем дату для input[type="date"]
+                if (letter.registration_date) {
+                    const date = new Date(letter.registration_date);
+                    if (!isNaN(date.getTime())) {
+                        const formattedDate = date.toISOString().split('T')[0];
+                        document.getElementById('editRegistrationDate').value = formattedDate;
+                    }
+                }
+                
+                // Заполняем поля в зависимости от типа письма
+                if (type === 'outgoing') {
+                    document.getElementById('editOutgoingNumber').value = letter.outgoing_number || '';
+                    document.getElementById('editRecipient').value = letter.recipient || '';
+                    document.getElementById('editExecutor').value = letter.executor || '';
+                } else {
+                    document.getElementById('editInternalNumber').value = letter.internal_number || '';
+                    document.getElementById('editExternalNumber').value = letter.external_number || '';
+                    document.getElementById('editSender').value = letter.sender || '';
+                    document.getElementById('editAddressee').value = letter.addressee || '';
+                    document.getElementById('editRegisteredBy').value = letter.registered_by || '';
+                }
+                
+                // Обработка информации о файле
+                const fileInfo = document.getElementById('currentFileInfo');
+                const currentFileName = document.getElementById('currentFileName');
+                
+                if (fileInfo && currentFileName) {
+                    if (letter.file_path && letter.file_path !== 'null' && letter.file_path !== '') {
+                        const fileName = letter.file_path.split('/').pop() || letter.file_path;
+                        currentFileName.textContent = fileName;
+                        fileInfo.style.display = 'block';
+                        
+                        // Создаем скрытое поле для управления удалением файла
+                        const removeFlag = document.createElement('input');
+                        removeFlag.type = 'hidden';
+                        removeFlag.id = 'removeFileFlag';
+                        removeFlag.name = 'remove_file';
+                        removeFlag.value = 'false';
+                        form.appendChild(removeFlag);
+                    } else {
+                        fileInfo.style.display = 'none';
+                    }
+                }
+                
+                // Показываем модальное окно с анимацией
+                modal.style.display = 'flex';
+                modal.style.animation = 'modalAppear 0.3s ease forwards';
+                
+                // Добавляем обработчики событий
+                modal.addEventListener('click', handleModalClick);
+                document.addEventListener('keydown', handleEscapeKey);
+                
+                resolve();
+            } catch (error) {
+                console.error('Ошибка при открытии модального окна:', error);
+                showNotification(`Ошибка при открытии формы редактирования: ${error.message}`, 'error');
+                reject(error);
+            }
+        }, 10);
+    });
 }
 
-// Закрытие модального окна редактирования
+// Закрытие модального окна редактирования (исправленная)
 function closeEditModal() {
     const modal = document.getElementById('editModal');
-    modal.style.display = 'none';
-    
-    // Убираем обработчики событий
-    modal.removeEventListener('click', handleModalClick);
-    document.removeEventListener('keydown', handleEscapeKey);
+    if (modal) {
+        modal.style.animation = 'fadeOut 0.3s ease forwards';
+        setTimeout(() => {
+            modal.style.display = 'none';
+            modal.style.animation = '';
+            
+            // Убираем обработчики событий
+            modal.removeEventListener('click', handleModalClick);
+            document.removeEventListener('keydown', handleEscapeKey);
+        }, 300);
+    }
 }
 
 // Обработчик клика вне модального окна
@@ -498,52 +531,90 @@ function handleEscapeKey(e) {
     }
 }
 
-// Удаление прикрепленного файла
+// Удаление прикрепленного файла (исправленная)
 function removeFile() {
-    document.getElementById('currentFileInfo').style.display = 'none';
-    // Добавляем скрытое поле для указания удаления файла
-    if (!document.getElementById('removeFileFlag')) {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.id = 'removeFileFlag';
-        input.name = 'remove_file';
-        input.value = 'true';
-        document.getElementById('editForm').appendChild(input);
-    } else {
-        document.getElementById('removeFileFlag').value = 'true';
+    const fileInfo = document.getElementById('currentFileInfo');
+    const removeFlag = document.getElementById('removeFileFlag');
+    
+    if (fileInfo) {
+        fileInfo.style.display = 'none';
+    }
+    
+    if (removeFlag) {
+        removeFlag.value = 'true';
+    }
+    
+    // Очищаем поле выбора файла
+    const fileInput = document.getElementById('editFile');
+    if (fileInput) {
+        fileInput.value = '';
     }
 }
 
-// Обработка отправки формы редактирования
+// Обработка отправки формы редактирования (исправленная)
 document.getElementById('editForm').addEventListener('submit', async function(e) {
+    console.log('Кнопка отправки изменений нажата')
+
     e.preventDefault();
     
     const id = document.getElementById('editId').value;
     const type = document.getElementById('editType').value;
+    
+    if (!id || !type) {
+        showNotification('Ошибка: не указан ID или тип письма', 'error');
+        return;
+    }
+    
     const formData = new FormData(this);
     
+    // Добавляем проверку на удаление файла
+    const removeFlag = document.getElementById('removeFileFlag');
+    if (removeFlag && removeFlag.value === 'true') {
+        formData.append('remove_file', 'true');
+    }
+    
     try {
+        console.log(`Отправка обновления для письма ${type} #${id}...`);
+        
         const response = await fetch(`${API_BASE_URL}/${type}/${id}`, {
             method: 'PUT',
             body: formData
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Ошибка при обновлении письма');
+            const errorText = await response.text();
+            throw new Error(errorText || `HTTP error! status: ${response.status}`);
         }
 
         const result = await response.json();
+        console.log('Письмо обновлено:', result);
         
         showNotification('Письмо успешно обновлено!', 'success');
         closeEditModal();
-        loadLetters(); // Обновляем список
+        
+        // Обновляем список писем
+        setTimeout(() => {
+            loadLetters();
+        }, 500);
         
     } catch (error) {
         console.error('❌ Ошибка при обновлении письма:', error);
-        showNotification('Ошибка при обновлении письма: ' + error.message, 'error');
+        showNotification(`Ошибка при обновлении письма: ${error.message}`, 'error');
     }
 });
+
+// Функция для отладки проблем с файлами
+function debugFileIssue(letter) {
+    console.log('=== ДЕБАГ ИНФОРМАЦИЯ О ФАЙЛЕ ===');
+    console.log('file_path:', letter.file_path);
+    console.log('file_path тип:', typeof letter.file_path);
+    console.log('file_path равно null:', letter.file_path === null);
+    console.log('file_path равно "null":', letter.file_path === 'null');
+    console.log('file_path пустая строка:', letter.file_path === '');
+    console.log('file_path undefined:', letter.file_path === undefined);
+    console.log('Есть файл?:', letter.file_path && letter.file_path !== 'null' && letter.file_path !== '');
+    console.log('================================');
+}   
 
 // Функция для показа уведомлений
 function showNotification(message, type = 'info') {
@@ -559,9 +630,6 @@ function showNotification(message, type = 'info') {
             <button class="notification-close" onclick="this.parentElement.parentElement.remove()">&times;</button>
         </div>
     `;
-    
-    
-    document.body.appendChild(notification);
     
     // Автоматическое удаление через 5 секунд
     setTimeout(() => {
